@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prize Bond Thailand - Royal Dice</title>
+    
+    <link rel="manifest" href='data:application/manifest+json,{
+      "name": "Price Bond Inam Official",
+      "short_name": "Price Bond Inam",
+      "start_url": "./index.html",
+      "display": "standalone",
+      "background_color": "#050b14",
+      "theme_color": "#0d6efd",
+      "icons": [
+        { "src": "prize_bond_girl.png", "sizes": "192x192", "type": "image/png" },
+        { "src": "prize_bond_girl.png", "sizes": "512x512", "type": "image/png" }
+      ]
+    }'>
+
+    <style>
+        :root {
+            --gold-primary: #ffd700;
+            --border-gold: #b8860b;
+            --bg-dark: #050b14;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .game-card {
+            background: linear-gradient(180deg, #0a192f 0%, #020c1b 100%);
+            border: 2px solid var(--border-gold);
+            border-radius: 12px;
+            padding: 15px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.25);
+            text-align: center;
+        }
+
+        .crown-icon { font-size: 30px; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+
+        .header-title { 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 15px; 
+            margin-bottom: 5px;
+        }
+        .side-pk { 
+            background: linear-gradient(135deg, #00b09b, #96c93d); 
+            color: white; 
+            padding: 8px 16px; 
+            border-radius: 10px; 
+            font-size: 20px;
+            font-weight: bold; 
+            border: 2px solid var(--gold-primary);
+            box-shadow: 0 4px 15px rgba(0, 176, 155, 0.5);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .main-title-text h1 { 
+            margin: 0; 
+            font-size: 19px; 
+            color: var(--gold-primary); 
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.8);
+        }
+        .sub-banner { color: #00ffcc; font-size: 13px; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px; }
+        .note-box { background: rgba(255, 0, 0, 0.2); border: 1px solid red; padding: 6px; font-size: 11px; border-radius: 4px; margin-bottom: 12px; }
+
+        .led-screen-3d {
+            position: relative;
+            background: rgba(0, 0, 0, 0.85);
+            border: 3px solid var(--border-gold);
+            border-radius: 10px;
+            padding: 14px;
+            margin-bottom: 15px;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(255, 215, 0, 0.4), 0 5px 15px rgba(0,0,0,0.6);
+        }
+        
+        .led-screen-3d::before {
+            content: "";
+            position: absolute;
+            top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(255,215,0,0.08) 0%, rgba(0,176,155,0.04) 50%, transparent 70%);
+            animation: rotateGlow 10s linear infinite;
+            z-index: 0;
+        }
+        @keyframes rotateGlow { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .led-info-bar, .screen-inner-content { position: relative; z-index: 1; }
+        .led-info-bar { display: flex; justify-content: space-between; font-size: 11px; color: #00ff00; margin-bottom: 8px; font-family: monospace; font-weight: bold; }
+        .golden-display-wrapper { display: flex; justify-content: center; gap: 10px; min-height: 50px; align-items: center; margin: 8px 0; }
+        
+        .digit-box {
+            background: linear-gradient(180deg, #1a1a1a, #050505);
+            color: var(--gold-primary);
+            border: 2px solid var(--gold-primary);
+            font-size: 28px;
+            font-weight: bold;
+            width: 44px;
+            height: 50px;
+            line-height: 50px;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+            text-align: center;
+        }
+        .status-badge { font-size: 11px; padding: 4px 12px; border-radius: 4px; margin-top: 5px; display: inline-block; font-weight: bold; text-transform: uppercase; }
+        .status-open { background: #28a745; color: white; box-shadow: 0 0 10px rgba(40,167,69,0.6); }
+        .status-locked { background: #dc3545; color: white; box-shadow: 0 0 10px rgba(220,53,69,0.6); }
+
+        .form-group { margin-bottom: 10px; text-align: left; }
+        .form-group label { display: block; font-size: 12px; margin-bottom: 4px; color: var(--gold-primary); font-weight: bold; }
+        .form-control { width: 100%; padding: 9px; border-radius: 6px; border: 1px solid #444; background: #111; color: white; box-sizing: border-box; font-size: 13px; }
+        .urdu-hint { font-size: 10px; color: #aaa; margin-top: 3px; }
+
+        .poster-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 12px 0; }
+        .poster-box { background: rgba(12, 33, 61, 0.85); border: 1.5px solid var(--border-gold); border-radius: 8px; padding: 8px; text-align: left; font-size: 11px; }
+        .poster-box h3 { color: #000; background: var(--gold-primary); font-size: 11px; padding: 4px; border-radius: 4px; text-align: center; margin: 0 0 6px 0; font-weight: bold; }
+        .poster-box ul { list-style: none; padding: 0; margin: 0; line-height: 1.5; }
+
+        .btn-open-confirm {
+            background: linear-gradient(180deg, #ff4500, #cc3700);
+            color: white; border: 2px solid var(--gold-primary); width: 100%; padding: 14px;
+            font-size: 15px; font-weight: bold; border-radius: 25px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 69, 0, 0.5); text-transform: uppercase;
+        }
+        .btn-open-confirm:disabled { background: #555; border-color: #777; cursor: not-allowed; box-shadow: none; }
+
+        .install-section { text-align: center; margin: 15px 0; }
+        #pwaInstallBtn {
+            background-color: #01875f; color: white; border: 2px solid var(--gold-primary);
+            width: 100%; padding: 12px; font-size: 15px; font-weight: bold; border-radius: 25px;
+            cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            box-shadow: 0 4px 15px rgba(1, 135, 95, 0.4);
+        }
+
+        .ads-box { background: #111; border: 1px dashed #555; padding: 10px; color: #888; font-size: 12px; border-radius: 6px; margin: 15px 0; text-align: center; }
+        
+        .prize-box { background: rgba(255,255,255,0.05); border: 1px solid #333; padding: 10px; border-radius: 6px; text-align: left; font-size: 11px; margin-bottom: 10px; }
+        .prize-box h3 { margin: 0 0 5px 0; color: var(--gold-primary); }
+
+        .bank-payment-box { 
+            background: linear-gradient(135deg, #0c1a2d, #05101a); 
+            border: 2px solid var(--gold-primary); 
+            padding: 12px; 
+            border-radius: 8px; 
+            margin: 10px 0; 
+            font-size: 12px; 
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        .payment-logos { 
+            font-weight: bold; 
+            color: #00ffcc; 
+            font-size: 13px; 
+            margin-bottom: 5px; 
+            text-transform: uppercase;
+        }
+
+        .btn-smart-game {
+            background: linear-gradient(180deg, #28a745, #1e7e34); color: white; border: 2px solid var(--gold-primary);
+            width: 100%; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 25px; cursor: pointer; margin-bottom: 8px;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-history-panel {
+            background: linear-gradient(180deg, #17a2b8, #117a8b); color: white; border: 2px solid var(--gold-primary);
+            width: 100%; padding: 12px; font-size: 14px; font-weight: bold; border-radius: 25px; cursor: pointer; margin-bottom: 8px;
+            box-shadow: 0 4px 15px rgba(23, 162, 184, 0.4);
+        }
+
+        .history-section { display: none; background: rgba(10, 25, 47, 0.98); border: 2px solid var(--gold-primary); padding: 12px; margin-top: 10px; border-radius: 8px; text-align: left; font-size: 11px; direction: rtl; }
+        .history-item { background: rgba(255,255,255,0.05); border-bottom: 1px solid #444; padding: 8px; margin-bottom: 6px; border-radius: 4px; position: relative; }
+        
+        /* Admin Delete Button inside History Item */
+        .btn-del-history { background: red; color: white; border: none; padding: 2px 6px; font-size: 9px; border-radius: 3px; cursor: pointer; float: left; }
+
+        .admin-panel { display: none; background: rgba(20, 0, 0, 0.98); border: 2px dashed red; padding: 12px; margin-top: 10px; border-radius: 8px; text-align: left; font-size: 11px; }
+        .bet-row { background: rgba(255,255,255,0.05); border: 1px solid #444; padding: 6px; margin-bottom: 5px; border-radius: 4px; }
+        
+        .btn-dual-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .btn-group-wa { background: #0088cc; color: white; padding: 10px; font-size: 11px; font-weight: bold; border-radius: 20px; text-decoration: none; text-align: center; display: block; }
+        .btn-help-wa { background: #25D366; color: white; padding: 10px; font-size: 11px; font-weight: bold; border-radius: 20px; text-decoration: none; text-align: center; display: block; }
+        .contact-number-footer { font-size: 12px; color: var(--gold-primary); font-weight: bold; margin-top: 12px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="game-card">
+    <div class="crown-icon">👑</div>
+    <div class="header-title">
+        <div class="side-pk">PK</div>
+        <div class="main-title-text"><h1>Prize Bond - Royal Dice</h1></div>
+        <div class="side-pk">PK</div>
+    </div>
+    <div class="sub-banner">Inami Bond Thailand Official</div>
+
+    <div class="note-box">Note: Yeh game sirf aur sirf Pakistan ke logo ke liye hai 🇵🇰</div>
+
+    <!-- 1. 3D LED Live Result Screen with Motion Glow Background -->
+    <div class="led-screen-3d">
+        <div class="screen-inner-content">
+            <div class="led-info-bar">
+                <span id="liveDateDisplay">Date: --/--/2026</span>
+                <span id="liveTimeDisplay">Time: --:--:-- --</span>
+            </div>
+            <div style="font-size: 11px; color: var(--gold-primary); font-weight: bold; margin-bottom: 4px;" id="screenModeTitle">Live Result Display</div>
+            <div class="golden-display-wrapper" id="digitDisplayContainer"></div>
+            <div><span id="sessionStatusBadge" class="status-badge status-open">BETTING OPEN</span></div>
+        </div>
+    </div>
+
+    <!-- 2. Game Selection & Betting Controls -->
+    <div class="controls-section">
+        <div class="form-group">
+            <label>1. Select Game / Draw Session (14 Daily Sessions):</label>
+            <select id="gameSelect" class="form-control" onchange="onGameChange()">
+                <option value="PK55" data-time="11:15 AM">PK55 (11:15 AM - 2-Figure Open/Close)</option>
+                <option value="PK48" data-time="12:15 PM">PK48 (12:15 PM - 2-Figure Open/Close)</option>
+                <option value="LS1" data-time="01:15 PM">LS1 (01:15 PM - Golden 4-Figure)</option>
+                <option value="LS2" data-time="02:15 PM" selected>LS2 (02:15 PM - Golden 4-Figure)</option>
+                <option value="LS3" data-time="03:15 PM">LS3 (03:15 PM - Golden 4-Figure)</option>
+                <option value="SS11" data-time="04:15 PM">SS11 (04:15 PM - Golden 4-Figure)</option>
+                <option value="SS22" data-time="05:15 PM">SS22 (05:15 PM - Golden 4-Figure)</option>
+                <option value="SS33" data-time="06:15 PM">SS33 (06:15 PM - Golden 4-Figure)</option>
+                <option value="SS44" data-time="07:15 PM">SS44 (07:15 PM - Golden 4-Figure)</option>
+                <option value="SS77" data-time="08:15 PM">SS77 (08:15 PM - Night Golden 4-Figure)</option>
+                <option value="MV33" data-time="09:15 PM">MV33 (09:15 PM - Night Golden 4-Figure)</option>
+                <option value="LP11" data-time="10:15 PM">LP11 (10:15 PM - Night Golden 4-Figure)</option>
+                <option value="MP44" data-time="11:15 PM">MP44 (11:15 PM - Night Golden 4-Figure)</option>
+                <option value="NT00" data-time="12:15 AM">NT00 (12:15 AM - MidNight 4-Figure)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label id="inputLabel">2. Enter Number (1/2/4-Figure):</label>
+            <input type="text" id="luckyInput" class="form-control" placeholder="E.g. 7 (Open), 78 ya 4007">
+            <div class="urdu-hint">💡 آپ اوپن، کلوز یا پورا نمبر درج کر سکتے ہیں۔</div>
+        </div>
+
+        <div class="form-group">
+            <label id="amountLabel">3. Bet Amount (Rs):</label>
+            <input type="number" id="betInput" class="form-control" value="20" min="20">
+        </div>
+
+        <button class="btn-open-confirm" id="confirmBtn" onclick="submitOpenConfirmEntry()">
+            🔥 OK / OPEN (CONFIRM & SAVE)
+        </button>
+    </div>
+
+    <!-- PWA INSTALL BUTTON -->
+    <div class="install-section">
+        <button id="pwaInstallBtn">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/d/d0/Google_Play_Arrow_logo.svg" width="20" height="20" alt="Play Store">
+            ڈاؤن لوڈ اینڈ انسٹال ایپ (Play Store Style)
+        </button>
+    </div>
+
+    <!-- ADS AREA BANNER -->
+    <div class="ads-box">📢 [Ads Area - آپ کے اشتہارات یہاں چلیں گے]</div>
+
+    <!-- Prize Structure -->
+    <div class="prize-box">
+        <h3>Prize Structure:</h3>
+        <ul>
+            <li>• <strong>1-Figure (Single Digit):</strong> Rs. 10 par Rs. 90</li>
+            <li>• <strong>2-Figure (Double Digit):</strong> Rs. 10 par Rs. 1,500</li>
+            <li>• <strong>4-Figure (Golden Number):</strong> Rs. 20 se start - Rs. 15,000</li>
+        </ul>
+    </div>
+
+    <!-- Payment Box -->
+    <div class="bank-payment-box">
+        <div class="payment-logos">📱 Easypaisa & JazzCash Account</div>
+        <div>Account No: <strong>03172164508</strong></div>
+        <div style="margin-top: 4px;">Account Title & Name: <strong>Yaseen</strong></div>
+    </div>
+
+    <!-- Posters -->
+    <div class="poster-grid">
+        <div class="poster-box">
+            <h3>Daily Draws & Timings</h3>
+            <ul>
+                <li>• PK55 (11:15 AM)</li>
+                <li>• PK48 (12:15 PM)</li>
+                <li>• LS1, LS2, LS3 Sessions</li>
+                <li>• SS77 (8:15 PM)</li>
+                <li>• MV33 (9:15 PM)</li>
+                <li>• LP11 (10:15 PM)</li>
+                <li>• MP44 (11:15 PM)</li>
+            </ul>
+        </div>
+        <div class="poster-box">
+            <h3>Golden Session Rules</h3>
+            <ul>
+                <li>• <strong>Lock Time:</strong> 20 Mins Before Draw</li>
+                <li>• <strong>Open Digit:</strong> Draw Time</li>
+                <li>• <strong>Close Digit:</strong> +15 Mins Delay</li>
+                <li style="margin-top: 4px; color: var(--gold-primary);">Help: 03172164508</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- HISTORY PANEL BUTTON -->
+    <button class="btn-history-panel" onclick="toggleHistoryPanel()">📋 پرانے نتائج کی ہسٹری (لائف ٹائم آرکائیو)</button>
+
+    <!-- HISTORY PANEL SECTION (URDU) -->
+    <div class="history-section" id="historySection">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <h3 style="color: var(--gold-primary); margin:0; font-size: 13px;">📜 لائف ٹائم نتائج کی ہسٹری آرکائیو</h3>
+            <button onclick="toggleHistoryPanel()" style="background: #444; color: #fff; border: none; padding: 2px 6px; font-size: 10px; border-radius: 3px; cursor: pointer;">بند کریں [X]</button>
+        </div>
+        <div style="font-size: 10px; color: #00ffcc; margin-bottom: 8px;">یہ فائر بیس سے جڑا ہوا لائف ٹائم ریکارڈ ہے۔ (ڈیلیٹ صرف ایڈمن پینل سے پاسورڈ لگا کر ہو سکتا ہے)</div>
+        <div id="historyListContainer" style="max-height: 250px; overflow-y: auto;">
+            <p style="color: #aaa; font-size: 11px; text-align:center;">ہسٹری لوڈ ہو رہی ہے...</p>
+        </div>
+    </div>
+
+    <!-- SMART GAME CONTROL -->
+    <button class="btn-smart-game" onclick="openAdminPanel()">🎮 Smart Game Control</button>
+
+    <!-- CONTROL PANEL BOX -->
+    <div class="admin-panel" id="adminPanel">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+            <h3 style="color: #ff5555; margin:0; font-size: 13px;">🔒 Smart Game Control</h3>
+            <button onclick="closeAdminPanel()" style="background: #444; color: #fff; border: none; padding: 2px 6px; font-size: 10px; border-radius: 3px; cursor: pointer;">Close [X]</button>
+        </div>
+        <input type="password" id="adminPassInput" class="form-control" placeholder="Enter Password..." style="margin-bottom: 5px;">
+        <button onclick="unlockAdmin()" style="background: #0088cc; color: white; border: none; padding: 5px; width: 100%; font-weight: bold; border-radius: 4px; cursor: pointer; margin-bottom: 8px;">Login</button>
+        
+        <div id="adminDashboard" style="display:none;">
+            <!-- 1. Live Result Update Section -->
+            <label style="color:var(--gold-primary);">Set Live Winning Number Manually:</label>
+            <input type="text" id="adminNewNum" class="form-control" placeholder="E.g. 4007 or 78" style="margin-bottom: 5px;">
+            <button onclick="saveAdminNumber()" style="background: red; color: white; border: none; padding: 6px; width: 100%; font-weight: bold; border-radius: 4px; cursor: pointer; margin-bottom: 15px;">Update Live Result</button>
+            
+            <hr style="border-color: #444; margin-bottom: 15px;">
+
+            <!-- 2. Manual History Entry -->
+            <h4 style="color: var(--gold-primary); font-size: 12px; margin-bottom: 5px;">➕ پرانا یا نیا رزلٹ ہسٹری میں خود ایڈ کریں:</h4>
+            
+            <label style="font-size: 10px; color:#aaa;">تاریخ درج کریں (E.g. 10/11/2026):</label>
+            <input type="text" id="manualDate" class="form-control" placeholder="10/11/2026" style="margin-bottom: 5px;">
+
+            <label style="font-size: 10px; color:#aaa;">دن کا نام (E.g. منگل / پیر / اتوار):</label>
+            <input type="text" id="manualDay" class="form-control" placeholder="منگل" style="margin-bottom: 5px;">
+
+            <label style="font-size: 10px; color:#aaa;">سیشن کا نام (E.g. PK55 یا LS2):</label>
+            <input type="text" id="manualGame" class="form-control" placeholder="PK55" style="margin-bottom: 5px;">
+
+            <label style="font-size: 10px; color:#aaa;">سیشن کا وقت (E.g. 11:15 AM):</label>
+            <input type="text" id="manualTime" class="form-control" placeholder="11:15 AM" style="margin-bottom: 5px;">
+
+            <label style="font-size: 10px; color:#aaa;">جیتنے والا نمبر (Winning Number):</label>
+            <input type="text" id="manualNum" class="form-control" placeholder="49 یا 4007" style="margin-bottom: 8px;">
+
+            <button onclick="saveManualHistory()" style="background: #28a745; color: white; border: none; padding: 8px; width: 100%; font-weight: bold; border-radius: 4px; cursor: pointer; margin-bottom: 15px;">💾 ہمیشہ کے لیے محفوظ کریں</button>
+
+            <h4 style="color:var(--gold-primary); font-size: 11px; margin-bottom: 4px;">User Bets History (Live Firebase):</h4>
+            <div id="betsListContainer" style="max-height: 150px; overflow-y: auto;">
+                <p style="color: #888; font-size: 10px;">No bets recorded yet.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- WhatsApp Links -->
+    <div class="btn-dual-row">
+        <a href="https://chat.whatsapp.com/Ki5E3843WTZFkYl1xwPoH7?s=cl&p=a&iam=2" target="_blank" class="btn-group-wa">📢 Live Prize Bond Group</a>
+        <a href="https://wa.me/923461871543?text=Salam%20Yaseen%20bhai,%20mujhe%20game%20ke%20hawale%20se%20help%20chahiye." target="_blank" class="btn-help-wa">🛠️ WhatsApp Help</a>
+    </div>
+
+    <div class="contact-number-footer">WhatsApp / Contact: 03172164508</div>
+</div>
+
+<!-- Firebase SDK Integration Module -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+  import { getDatabase, ref, push, set, onValue, remove } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBI-4LwQWSSX6cXZEbsXhths-XVGTYoRqE",
+    authDomain: "prize-bond-thailand-92cec.firebaseapp.com",
+    databaseURL: "https://prize-bond-thailand-92cec-default-rtdb.firebaseio.com",
+    projectId: "prize-bond-thailand-92cec",
+    storageBucket: "prize-bond-thailand-92cec.firebasestorage.app",
+    messagingSenderId: "372923065192",
+    appId: "1:372923065192:web:c501b1aa2595454becacdd",
+    measurementId: "G-2WJ8KEPG10"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
+
+  window.dbRef = ref;
+  window.dbPush = push;
+  window.dbSet = set;
+  window.dbOnValue = onValue;
+  window.dbRemove = remove;
+  window.database = database;
+</script>
+
+<script>
+    const goldenGames = ['LS1', 'LS2', 'LS3', 'SS11', 'SS22', 'SS33', 'SS44', 'SS77', 'MV33', 'LP11', 'MP44', 'NT00'];
+    let currentLockState = false;
+    let isAdminLoggedIn = false; // Tracks if admin is logged in to show delete button in history
+
+    // Realtime Clock
+    function updateClock() {
+        const now = new Date();
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = now.getFullYear();
+        document.getElementById('liveDateDisplay').innerText = `Date: ${day}/${month}/${year}`;
+
+        let hours = now.getHours();
+        const mins = String(now.getMinutes()).padStart(2, '0');
+        const secs = String(now.getSeconds()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        const displayHours = hours % 12 || 12;
+        document.getElementById('liveTimeDisplay').innerText = `Time: ${String(displayHours).padStart(2,'0')}:${mins}:${secs} ${ampm}`;
+
+        checkSessionTiming(now);
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    function checkSessionTiming(now) {
+        const select = document.getElementById('gameSelect');
+        const selectedOption = select.options[select.selectedIndex];
+        if (!selectedOption) return;
+        const sessionTimeStr = selectedOption.getAttribute('data-time');
+
+        const [time, period] = sessionTimeStr.split(' ');
+        let [sHours, sMins] = time.split(':').map(Number);
+        if (period === 'PM' && sHours !== 12) sHours += 12;
+        if (period === 'AM' && sHours === 12) sHours = 0;
+
+        const sessionDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), sHours, sMins, 0);
+        const lockDate = new Date(sessionDate.getTime() - (20 * 60 * 1000));
+        const autoSaveTime = new Date(sessionDate.getTime() + (13 * 60 * 1000)); // 13 mins after draw, auto save to history
+
+        const badge = document.getElementById('sessionStatusBadge');
+        const confirmBtn = document.getElementById('confirmBtn');
+
+        if (now >= lockDate && now < sessionDate) {
+            badge.innerText = "BETTING LOCKED (Draw Soon)";
+            badge.className = "status-badge status-locked";
+            if(confirmBtn) confirmBtn.disabled = true;
+            currentLockState = true;
+        } else {
+            badge.innerText = "BETTING OPEN";
+            badge.className = "status-badge status-open";
+            if(confirmBtn) confirmBtn.disabled = false;
+            currentLockState = false;
+        }
+
+        // Auto-Pilot Background Archiving to Firebase if admin is offline
+        const game = select.value;
+        const isGolden = goldenGames.includes(game);
+        const autoSaveKey = `autosaved_${game}_${now.toDateString()}`;
+        
+        if (now >= autoSaveTime && now < new Date(autoSaveTime.getTime() + 60000) && !localStorage.getItem(autoSaveKey)) {
+            triggerAutoArchive(game, selectedOption.getAttribute('data-time'), isGolden);
+            localStorage.setItem(autoSaveKey, "true");
+        }
+    }
+
+    // Function for Autonomous Firebase Background Archiving
+    function triggerAutoArchive(game, sessionTime, isGolden) {
+        if (window.database && window.dbRef && window.dbSet && window.dbPush) {
+            const resRef = window.dbRef(window.database, 'results/' + game);
+            window.dbOnValue(resRef, (snapshot) => {
+                let winningNum = snapshot.val();
+                if (!winningNum) winningNum = isGolden ? "4007" : "59";
+
+                const now = new Date();
+                const daysMap = { 'Sunday': 'اتوار', 'Monday': 'پیر', 'Tuesday': 'منگل', 'Wednesday': 'بدھ', 'Thursday': 'جمعرات', 'Friday': 'جمعہ', 'Saturday': 'ہفتہ' };
+                const engDay = now.toLocaleDateString('en-US', { weekday: 'long' });
+                const urduDay = daysMap[engDay] || engDay;
+
+                const histRef = window.dbRef(window.database, 'resultHistory');
+                window.dbPush(histRef, {
+                    game: game,
+                    sessionTime: sessionTime,
+                    winningNum: winningNum,
+                    date: now.toLocaleDateString(),
+                    dayName: urduDay,
+                    timestamp: Date.now()
+                });
+            }, { onlyOnce: true });
+        }
+    }
+  function onGameChange() {
+        const game = document.getElementById('gameSelect').value;
+        const isGolden = goldenGames.includes(game);
+        const screenModeTitle = document.getElementById('screenModeTitle');
+        const betInput = document.getElementById('betInput');
+        const amountLabel = document.getElementById('amountLabel');
+
+        if (isGolden) {
+            screenModeTitle.innerText = `Golden 4-Figure Live Result (${game})`;
+            betInput.min = 20;
+            if (betInput.value < 20) betInput.value = 20;
+            amountLabel.innerText = "3. Bet Amount (Rs) - Min Rs. 20:";
+        } else {
+            screenModeTitle.innerText = `2-Figure Live Result (${game})`;
+            betInput.min = 10;
+            if (betInput.value < 10) betInput.value = 10;
+            amountLabel.innerText = "3. Bet Amount (Rs) - Min Rs. 10:";
+        }
+
+        fetchLiveResult(game);
+        loadHistoryPanel();
+        updateClock();
+    }
+
+    function renderDisplay(val, isGolden) {
+        const container = document.getElementById('digitDisplayContainer');
+        container.innerHTML = '';
+        let strVal = val ? val.toString() : (isGolden ? "----" : "--");
+        for (let char of strVal) {
+            const box = document.createElement('div');
+            box.className = 'digit-box';
+            box.innerText = char;
+            container.appendChild(box);
+        }
+    }
+
+    function fetchLiveResult(game) {
+        const now = new Date();
+        const select = document.getElementById('gameSelect');
+        const selectedOption = select.options[select.selectedIndex];
+        if (!selectedOption) return;
+        const sessionTimeStr = selectedOption.getAttribute('data-time');
+
+        const [time, period] = sessionTimeStr.split(' ');
+        let [sHours, sMins] = time.split(':').map(Number);
+        if (period === 'PM' && sHours !== 12) sHours += 12;
+        if (period === 'AM' && sHours === 12) sHours = 0;
+
+        const sessionDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), sHours, sMins, 0);
+        const step1Time = new Date(sessionDate.getTime() + (10 * 60 * 1000));
+        const step2Time = new Date(sessionDate.getTime() + (12 * 60 * 1000));
+
+        const isGolden = goldenGames.includes(game);
+
+        if (window.database && window.dbRef && window.dbOnValue) {
+            const resRef = window.dbRef(window.database, 'results/' + game);
+            window.dbOnValue(resRef, (snapshot) => {
+                let val = snapshot.val();
+                if (!val) {
+                    val = isGolden ? "0100" : "59";
+                }
+
+                if (now < sessionDate) {
+                    renderDisplay(isGolden ? "----" : "--", isGolden);
+                } else if (now >= sessionDate && now < step1Time) {
+                    if (!isGolden) {
+                        renderDisplay(val[0] + "×", false);
+                    } else {
+                        renderDisplay(val.substring(0, 2) + "××", true);
+                    }
+                } else if (now >= step1Time && now < step2Time) {
+                    if (!isGolden) {
+                        renderDisplay("×" + val[1], false);
+                    } else {
+                        renderDisplay("××" + val.substring(2, 4), true);
+                    }
+                } else {
+                    renderDisplay(val, isGolden);
+                }
+            });
+        } else {
+            renderDisplay(isGolden ? "4007" : "59", isGolden);
+        }
+    }
+
+    function toggleHistoryPanel() {
+        const panel = document.getElementById('historySection');
+        if (panel.style.display === 'block') {
+            panel.style.display = 'none';
+        } else {
+            panel.style.display = 'block';
+            loadHistoryPanel();
+        }
+    }
+
+    // Load History exclusively from Firebase (Lifelong Archive)
+    function loadHistoryPanel() {
+        const container = document.getElementById('historyListContainer');
+        container.innerHTML = '';
+
+        if (window.database && window.dbRef && window.dbOnValue) {
+            const histRef = window.dbRef(window.database, 'resultHistory');
+            window.dbOnValue(histRef, (snapshot) => {
+                container.innerHTML = '';
+                const data = snapshot.val();
+                if (!data) {
+                    container.innerHTML = '<p style="color:#aaa; font-size:11px; text-align:center;">ابھی تک کوئی پرانا ریکارڈ موجود نہیں ہے۔</p>';
+                    return;
+                }
+
+                let historyArray = [];
+                Object.keys(data).forEach(key => {
+                    historyArray.push({ id: key, ...data[key] });
+                });
+
+                historyArray.reverse();
+
+                historyArray.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'history-item';
+                    
+                    // Delete button is ONLY visible if admin is logged in
+                    let deleteBtnHTML = isAdminLoggedIn ? `<button class="btn-del-history" onclick="deleteHistoryItem('${item.id}')">ڈیلٹ کریں [X]</button>` : '';
+
+                    div.innerHTML = `
+                        ${deleteBtnHTML}
+                        📅 <b>تاریخ و دن:</b> ${item.date} (${item.dayName})<br>
+                        ⏰ <b>سیشن:</b> ${item.game} (${item.sessionTime})<br>
+                        🏆 <b>رزلٹ نمبر:</b> <span style="color:var(--gold-primary); font-size:13px; font-weight:bold;">${item.winningNum}</span>
+                    `;
+                    container.appendChild(div);
+                });
+            });
+        }
+    }
+
+    // Admin Only Secure Delete for History
+    window.deleteHistoryItem = function(key) {
+        if (!isAdminLoggedIn) {
+            alert("صرف ایڈمن ہی اسے حذف کر سکتا ہے!");
+            return;
+        }
+        if (confirm("کیا آپ واقعی اس رزلٹ کو ہسٹری سے ڈیلیٹ کرنا چاہتے ہیں؟")) {
+            if (window.database && window.dbRef && window.dbRemove) {
+                const itemRef = window.dbRef(window.database, 'resultHistory/' + key);
+                window.dbRemove(itemRef).then(() => {
+                    alert("ریکارڈ کامیابی کے ساتھ ڈیلیٹ کر دیا گیا ہے۔");
+                });
+            }
+        }
+    };
+
+    function submitOpenConfirmEntry() {
+        if(currentLockState) {
+            alert("معذرت! اس سیشن کی بیٹ بند ہو چکی ہے۔ براہ کرم اگلے سیشن کا انتظار کریں۔");
+            return;
+        }
+        const game = document.getElementById('gameSelect').value;
+        const num = document.getElementById('luckyInput').value;
+        const amount = document.getElementById('betInput').value;
+
+        if(!num) {
+            alert("براہ کرم اپنا لکی نمبر درج کریں!");
+            return;
+        }
+
+        const timestamp = new Date().toLocaleTimeString();
+        const fullDate = new Date().toLocaleDateString();
+
+        if (window.database && window.dbRef && window.dbPush) {
+            const betsRef = window.dbRef(window.database, 'userBets');
+            window.dbPush(betsRef, {
+                game: game,
+                number: num,
+                amount: amount,
+                date: fullDate,
+                time: timestamp,
+                status: 'Pending'
+            });
+            alert("آپ کی انٹری کامیابی کے ساتھ کنٹرول پینل میں سیو ہو گئی ہے!");
+  }
+      const msg = `Hello Yaseen! Maine game ${game} ke liye number ${num} par Rs. ${amount} ki bet lagai hai. Easypaisa / JazzCash (Account: 03172164508) par payment bhej kar screenshot attach kar raha hu.`;
+        const waURL = `https://wa.me/923461871543?text=${encodeURIComponent(msg)}`;
+        window.open(waURL, '_blank');
+    }
+
+    function openAdminPanel() { document.getElementById('adminPanel').style.display = 'block'; }
+    function closeAdminPanel() {
+        document.getElementById('adminPanel').style.display = 'none';
+        document.getElementById('adminDashboard').style.display = 'none';
+        document.getElementById('adminPassInput').value = '';
+    }
+
+    function unlockAdmin() {
+        const pass = document.getElementById('adminPassInput').value;
+        if (pass !== "786AAZAD") {
+            alert("Galat Password! Access Denied.");
+            return;
+        }
+        isAdminLoggedIn = true; // Mark admin authenticated
+        document.getElementById('adminDashboard').style.display = 'block';
+        alert("Admin Access Granted Successfully!");
+        loadUserBets();
+        loadHistoryPanel(); // Refresh history to show delete buttons
+    }
+
+    function saveAdminNumber() {
+        const newNum = document.getElementById('adminNewNum').value;
+        const select = document.getElementById('gameSelect');
+        const game = select.value;
+        const selectedOption = select.options[select.selectedIndex];
+        const sessionTime = selectedOption.getAttribute('data-time');
+
+        if (!newNum) {
+            alert("Kripya naya winning number enter karein!");
+            return;
+        }
+
+        if (window.database && window.dbRef && window.dbSet && window.dbPush) {
+            const resRef = window.dbRef(window.database, 'results/' + game);
+            window.dbSet(resRef, newNum).then(() => {
+                const now = new Date();
+                const daysMap = { 'Sunday': 'اتوار', 'Monday': 'پیر', 'Tuesday': 'منگل', 'Wednesday': 'بدھ', 'Thursday': 'جمعرات', 'Friday': 'جمعہ', 'Saturday': 'ہفتہ' };
+                const engDay = now.toLocaleDateString('en-US', { weekday: 'long' });
+                const urduDay = daysMap[engDay] || engDay;
+
+                const histRef = window.dbRef(window.database, 'resultHistory');
+                window.dbPush(histRef, {
+                    game: game,
+                    sessionTime: sessionTime,
+                    winningNum: newNum,
+                    date: now.toLocaleDateString(),
+                    dayName: urduDay,
+                    timestamp: Date.now()
+                });
+
+                alert(`Firebase par ${game} ka live result update ho gaya aur History mein bhi save ho gaya!`);
+            }).catch((error) => {
+                alert("Error updating: " + error.message);
+            });
+        }
+    }
+
+    window.saveManualHistory = function() {
+        const date = document.getElementById('manualDate').value;
+        const day = document.getElementById('manualDay').value;
+        const game = document.getElementById('manualGame').value;
+        const time = document.getElementById('manualTime').value;
+        const num = document.getElementById('manualNum').value;
+
+        if (!date || !day || !game || !num) {
+            alert("براہ کرم تاریخ، دن، گیم اور نمبر تمام خانے پُر کریں!");
+            return;
+        }
+
+        if (window.database && window.dbRef && window.dbPush) {
+            const histRef = window.dbRef(window.database, 'resultHistory');
+            window.dbPush(histRef, {
+                game: game,
+                sessionTime: time || "02:15 PM",
+                winningNum: num,
+                date: date,
+                dayName: day,
+                timestamp: Date.now()
+            }).then(() => {
+                alert("پرانا رزلٹ ہمیشہ کے لیے فائر بیس ہسٹری میں محفوظ ہو گیا ہے!");
+                document.getElementById('manualDate').value = '';
+                document.getElementById('manualDay').value = '';
+                document.getElementById('manualGame').value = '';
+                document.getElementById('manualTime').value = '';
+                document.getElementById('manualNum').value = '';
+            });
+        }
+    }
+
+    function loadUserBets() {
+        if (window.database && window.dbRef && window.dbOnValue) {
+            const betsRef = window.dbRef(window.database, 'userBets');
+            window.dbOnValue(betsRef, (snapshot) => {
+                const container = document.getElementById('betsListContainer');
+                container.innerHTML = '';
+                const data = snapshot.val();
+                if(!data) {
+                    container.innerHTML = '<p style="color:#888; font-size:10px;">No bets recorded yet.</p>';
+                    return;
+                }
+                Object.keys(data).forEach(key => {
+                    const bet = data[key];
+                    const div = document.createElement('div');
+                    div.className = 'bet-row';
+                    div.innerHTML = `
+                        <b>Game:</b> ${bet.game} | <b>Num:</b> ${bet.number} | <b>Rs:</b> ${bet.amount}<br>
+                        <span style="color:#aaa; font-size:9px;">Time: ${bet.date} ${bet.time}</span>
+                        <button onclick="deleteBet('${key}')" style="background:red; color:#fff; border:none; padding:2px 5px; font-size:9px; float:right; cursor:pointer;">Reject/Delete</button>
+                    `;
+                    container.appendChild(div);
+                });
+            });
+        }
+    }
+
+    window.deleteBet = function(key) {
+        if (window.database && window.dbRef && window.dbRemove) {
+            const betItemRef = window.dbRef(window.database, 'userBets/' + key);
+            window.dbRemove(betItemRef);
+            alert("Bet entry rejected & deleted from control panel.");
+        }
+    };
+
+    let deferredPrompt;
+    const installBtn = document.getElementById('pwaInstallBtn');
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        if(installBtn) installBtn.style.display = 'inline-flex';
+    });
+
+    if(installBtn) {
+        installBtn.addEventListener('click', () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then((choiceResult) => {
+                    deferredPrompt = null;
+                });
+            } else {
+                alert('ایپ انسٹالیشن کے لیے براؤزر کے مینو (3 Dots) پر کلک کر کے "Add to Home Screen" یا "Install App" سلیکٹ کریں!');
+            }
+        });
+    }
+
+    window.onload = function() {
+        onGameChange();
+    };
+</script>
+</body>
+</html>
